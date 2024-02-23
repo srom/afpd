@@ -95,9 +95,9 @@ def main():
             dockq_score = calc_pdockq(chain_coords,plddt_per_chain,t=8)
 
         scores_data['id'].append(complex_id)
-        scores_data['plddt'].append(plddt_avg)
-        scores_data['ptm'].append(ptm)
-        scores_data['iptm'].append(iptm)
+        scores_data['plddt'].append(np.round(plddt_avg, 2))
+        scores_data['ptm'].append(np.round(ptm, 2))
+        scores_data['iptm'].append(np.round(iptm, 2))
         scores_data['dockq'].append(np.round(dockq_score, 4))
 
     logger.info(f'Exporting sorted scores (best first) in CSV format to {output_path.resolve().as_posix()}')
