@@ -70,12 +70,13 @@ def main():
     logger.info(f'Number of protein complexes found: {len(protein_complex_files):,}')
 
     scores_data = {
+        'id'    : [],
         'plddt' : [],
         'ptm'   : [],
         'iptm'  : [],
         'dockq' : [],
     }
-    for i, (pdb_path, scores_path) in enumerate(protein_complex_files):
+    for i, (complex_id, pdb_path, scores_path) in enumerate(protein_complex_files):
         if i == 0 or (i+1) % 100 == 0 or (i+1) == len(protein_complex_files):
             logger.info(f'Scoring protein complex {i+1:,} / {len(protein_complex_files):,}')
 
@@ -93,10 +94,11 @@ def main():
             chain_coords, plddt_per_chain = read_pdb_pdockq(pdb_path)
             dockq_score = calc_pdockq(chain_coords,plddt_per_chain,t=8)
 
+        scores_data['id'].append(complex_id)
         scores_data['plddt'].append(plddt_avg)
         scores_data['ptm'].append(ptm)
         scores_data['iptm'].append(iptm)
-        scores_data['dockq'].append(dockq_score)
+        scores_data['dockq'].append(np.round(dockq_score, 4))
 
     logger.info(f'Exporting sorted scores (best first) in CSV format to {output_path.resolve().as_posix()}')
     pd.DataFrame.from_dict(
@@ -113,7 +115,7 @@ def main():
     sys.exit(0)
 
 
-def load_protein_complex_files(af_folder : Path) -> List[Tuple[Path, Path]]:
+def load_protein_complex_files(af_folder : Path) -> List[Tuple[str, Path, Path]]:
     """
     Iterate through AF predictions folder and find the PDB and JSON score files of the rank 1 model.
     """
@@ -123,9 +125,9 @@ def load_protein_complex_files(af_folder : Path) -> List[Tuple[Path, Path]]:
             pdb_match = re.match(r'^(.+)_[^_]+_rank_001_.+.pdb$', p.name)
             scores_match = re.match(r'^(.+)_scores_rank_001_.+.json$', p.name)
             if pdb_match is not None:
-                id_to_files[pdb_match[1]]['pdb'] = pdb_match[0]
+                id_to_files[pdb_match[1]]['pdb'] = p
             elif scores_match is not None:
-                id_to_files[scores_match[1]]['scores'] = scores_match[0]
+                id_to_files[scores_match[1]]['scores'] = p
 
     output = []
     for complex_id in id_to_files.keys():
@@ -135,7 +137,7 @@ def load_protein_complex_files(af_folder : Path) -> List[Tuple[Path, Path]]:
         elif 'scores' not in dct:
             logger.warning(f'No JSON scores file found for complex {complex_id}. Skipping.')
         else:
-            output.append((dct['pdb'], dct['scores']))
+            output.append((complex_id, dct['pdb'], dct['scores']))
 
     return output
 
@@ -144,8 +146,8 @@ def read_scores_from_json_file(json_scores : Path) -> Tuple[float, float, float]
     with open(json_scores, 'r') as f:
         scores_dict = json.load(f)
 
-    plddt = scores_dict.get('plddt', [])
-    plddt_avg = np.mean(plddt)
+    plddt = np.array(scores_dict.get('plddt', []), dtype=np.float32)
+    plddt_avg = plddt.mean()
     ptm = scores_dict.get('ptm')
     iptm = scores_dict.get('iptm')
 
@@ -260,10 +262,10 @@ def score_complex(path_coords, path_CB_inds, path_plddt):
             a_min_b = mat[:,np.newaxis,:] -mat[np.newaxis,:,:]
             dists = np.sqrt(np.sum(a_min_b.T ** 2, axis=0)).T
             contact_dists = dists[:l1,l1:]
-            contacts = np.argwhere(contact_dists<=8)
+            contacts = np.argwhere(contact_dists <= 8)
             # The first axis contains the contacts from chain 1
             # The second the contacts from chain 2
-            if contacts.shape[0]>0:
+            if contacts.shape[0] > 0:
                 av_if_plDDT = np.concatenate((chain_plddt[contacts[:,0]], int_chain_plddt[contacts[:,1]])).mean()
                 complex_score += np.log10(contacts.shape[0]+1)*av_if_plDDT
 
