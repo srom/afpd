@@ -7,7 +7,7 @@ This script reports the following metrics:
 - ipTM   (1)
 - DockQ  (2)
 
-Results are sorted by DockQ score (highest first) + ipTM to break even.
+Results are sorted by the average of the DockQ and ipTM scores (highest first).
 
 (1) Available directly from AlphaFold's output.
 (2) For DockQ we report either:
@@ -101,16 +101,18 @@ def main():
         scores_data['dockq'].append(np.round(dockq_score, 4))
 
     logger.info(f'Exporting sorted scores (best first) in CSV format to {output_path.resolve().as_posix()}')
-    pd.DataFrame.from_dict(
+    out_df = pd.DataFrame.from_dict(
         scores_data
-    ).sort_values(
-        ['dockq', 'iptm'], 
+    )
+    out_df['avg_dockq_iptm'] = ((out_df['dockq'] + out_df['iptm']) / 2).round(4)
+    out_df.sort_values(
+        'avg_dockq_iptm', 
         ascending=False,
     ).to_csv(
         output_path,
         index=False,
     )
-
+    
     logger.info('DONE')
     sys.exit(0)
 
