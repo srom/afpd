@@ -104,15 +104,15 @@ def main():
     out_df = pd.DataFrame.from_dict(
         scores_data
     )
-    out_df['avg_dockq_iptm'] = ((out_df['dockq'] + out_df['iptm']) / 2).round(4)
+    out_df['confidence'] = (0.8 * out_df['iptm'] + 0.2 * out_df['ptm']).round(4)
     out_df.sort_values(
-        'avg_dockq_iptm', 
+        'confidence', 
         ascending=False,
     ).to_csv(
         output_path,
         index=False,
     )
-    
+
     logger.info('DONE')
     sys.exit(0)
 
