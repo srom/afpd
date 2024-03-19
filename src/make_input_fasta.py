@@ -2,7 +2,7 @@
 Prepare fasta file for AlphaFold pulldown.
 
 Parameters:
-- bait:           fasta file containing baait proteins
+- bait:           fasta file containing bait proteins
 - target:         fasta file containing target proteins
 - output_folder:  path to an existing folder where the results will be saved (one fasta per bait protein)
 """
