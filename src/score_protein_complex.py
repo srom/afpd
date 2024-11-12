@@ -157,7 +157,7 @@ def read_scores_from_json_file(json_scores : Path) -> Tuple[float, float, float]
 
 
 ###
-# The functions below are either copied straight or lightly adapted from AlphaPulldown v1.0.4;
+# Except explicitly noted, functions below are adapted from AlphaPulldown v1.0.4;
 # https://github.com/KosinskiLab/AlphaPulldown/blob/1.0.4/alphapulldown/analysis_pipeline/calculate_mpdockq.py
 ###
 
@@ -277,11 +277,17 @@ def score_complex(path_coords, path_CB_inds, path_plddt):
 def calculate_mpDockQ(complex_score):
     """
     A function that returns a complex's mpDockQ score after calculating complex_score.
+    Source: https://github.com/KosinskiLab/AlphaPulldown/blob/1.0.4/alphapulldown/analysis_pipeline/calculate_mpdockq.py#L131
+    or https://github.com/patrickbryant1/MoLPC/blob/master/src/complex_assembly/score_entire_complex.py#L157
     """
-    L = 0.827
-    x_0 = 261.398
-    k = 0.036
-    b = 0.221
+    # L = 0.827
+    # x_0 = 261.398
+    # k = 0.036
+    # b = 0.221
+    L   = 0.783
+    x_0 = 289.79
+    k   = 0.061
+    b   = 0.23
     return L/(1+math.exp(-1*k*(complex_score-x_0))) + b
 
 
