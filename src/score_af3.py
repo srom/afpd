@@ -63,7 +63,7 @@ def main():
     for n in score_names:
         scores_data[n] = []
 
-    for i, scores_path in enumerate(scores_path):
+    for i, scores_path in enumerate(scores_paths):
         if i == 0 or (i+1) % 100 == 0 or (i+1) == len(scores_paths):
             logger.info(f'Scoring structure {i+1:,} / {len(scores_paths):,}')
 
@@ -72,7 +72,7 @@ def main():
         
         scores_data['id'].append(structure_id)
         for n in score_names:
-            scores_data[n].append(scores_data.get(n))
+            scores_data[n].append(scores_dict.get(n))
 
     logger.info(f'Exporting sorted scores (best first) in CSV format to {output_path.resolve().as_posix()}')
     out_df = pd.DataFrame.from_dict(
