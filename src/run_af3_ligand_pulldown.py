@@ -82,7 +82,7 @@ def main():
     id_col = args.id_col
     smiles_col = args.smiles_col
     output_folder = args.output_folder
-    n_models = n_models
+    n_models = args.n_models
 
     if not spec_path.is_file():
         logger.error(f'Spec path does not exist: {spec_path}')
